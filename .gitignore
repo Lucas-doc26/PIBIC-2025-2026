@@ -1,0 +1,15 @@
+#Variáveis de ambiente
+/.vscode
+/venv
+*.pyc
+__pycache__
+*.pyo
+*.pyd
+.Python
+db.sqlite3
+.env
+*.env
+*.DS_Store
+*.egg-info
+*.egg
+*.log
