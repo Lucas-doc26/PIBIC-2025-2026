@@ -2,7 +2,7 @@ import utils
 import argparse
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--dataset_path", default=None, help="Caminho para download dos datasets")
+parser.add_argument("--dataset_path", default='/opt/datasets', help="Caminho para download dos datasets")
 args = parser.parse_args()
 
 #Baixa os datasets necessários
