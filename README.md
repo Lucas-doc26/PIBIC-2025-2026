@@ -66,7 +66,7 @@ Para executar este projeto em sua máquina local, siga os passos abaixo:
 1.  **Clone o repositório:**
     ```bash
     git clone https://github.com/Lucas-doc26/PIBIC-2025-2026.git
-    cd ML
+    cd PIBIC-2025-2026
     ```
 
 2.  **Crie um ambiente Conda e ative-o:**
@@ -82,6 +82,6 @@ Para executar este projeto em sua máquina local, siga os passos abaixo:
 
 4.  **Execute o projeto:**
     ```bash
-    ./main.sh
+    ./main.sh #ainda em produção 
     ```
 </table>
