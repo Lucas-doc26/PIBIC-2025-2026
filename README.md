@@ -65,13 +65,13 @@ Para executar este projeto em sua máquina local, siga os passos abaixo:
 
 1.  **Clone o repositório:**
     ```bash
-    git clone https://github.com/Lucas-doc26/ML.git
+    git clone https://github.com/Lucas-doc26/PIBIC-2025-2026.git
     cd ML
     ```
 
 2.  **Crie um ambiente Conda e ative-o:**
     ```bash
-    conda create --name venv python=3.10
+    conda create --name venv python=3.13.2
     conda activate venv
     ```
 
