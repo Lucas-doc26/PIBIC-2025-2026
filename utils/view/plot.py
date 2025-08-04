@@ -37,40 +37,13 @@ def plot_autoencoder(x_test, Autoencoder, width=128, height=128, caminho_para_sa
         image = np.clip(image, 0, 1)  # Garante que a imagem esteja no intervalo [0, 1]
         return (image - image.min()) / (image.max() - image.min()) if image.max() != image.min() else image
 
-    plt.figure(figsize=(16, 8))
-    for i in range(8):
-        # Imagem original
-        plt.subplot(2, 8, i + 1)
-        plt.imshow(x_test[i])
-        plt.title("Original")
-        plt.axis("off")
-
-        # Predição e normalização
-        pred = Autoencoder.predict(x_test[i].reshape((1,width, height,3)))
-        pred_img = normalize(pred[0])
-
-        plt.subplot(2, 8, i + 8 + 1)
-        plt.imshow(pred_img)
-
-        del pred_img, pred
-
-        plt.title(f"{calculate_ssim(x_test[i], pred_img)}")
-        plt.axis("off")
-    
-    if caminho_para_salvar != None:
-        save_path = os.path.join(caminho_para_salvar, f'Autoencoder-{nome_autoencoder}.png')
-        plt.savefig(save_path)
-    
-    plt.show()
-
-def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_path=None):
     n = min(8, len(x_test))
     # preditos em batch
-    batch = x_test[:n].reshape((n, width, height, 3))
-    preds = autoencoder.predict(batch, verbose=0)
+    batch = x_test[:n]#.reshape((n, width, height, 3))
+    preds = Autoencoder.predict(batch, verbose=0)
 
     plt.figure(figsize=(16, 6))
-    for i in range(n):
+    for i in range(8):
         # original
         plt.subplot(2, n, i + 1)
         plt.imshow(x_test[i])
@@ -88,8 +61,40 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
         ).numpy()
         plt.title(f"SSIM: {s}")
         plt.axis("off")
-
-    plt.tight_layout()
-    if save_path != None:
+    
+    if caminho_para_salvar != None:
+        save_path = os.path.join(caminho_para_salvar, f'Autoencoder-{nome_autoencoder}.png')
         plt.savefig(save_path)
-    #plt.show()
+    
+    plt.show()
+
+def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_path=None):
+    def normalize(image):
+        image = np.clip(image, 0, 1)  # Garante que a imagem esteja no intervalo [0, 1]
+        return (image - image.min()) / (image.max() - image.min()) if image.max() != image.min() else image
+
+    batch = next(x_test)  # só imagens
+    n = min(8, batch.shape[0])
+    batch = batch[:n]
+
+    plt.figure(figsize=(16, 8))
+    for i in range(n):
+        plt.subplot(2, 8, i + 1)
+        plt.imshow(batch[i])
+        plt.title("Original")
+        plt.axis("off")
+
+        pred = autoencoder.predict(batch[i].reshape((1, width, height, 3)))
+        pred_img = normalize(pred[0])
+
+        plt.subplot(2, 8, i + 8 + 1)
+        plt.imshow(pred_img)
+        plt.title(f"SSIM: {calculate_ssim(batch[i], pred_img):.3f}")
+        plt.axis("off")
+
+        del pred_img, pred
+
+    if save_path is not None:
+        plt.savefig(save_path)
+
+    plt.show()

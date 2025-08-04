@@ -4,3 +4,4 @@ from utils.download_datasets import *
 from utils.datasets import *
 from utils.image_metrics import *
 from utils.loss_functions import *
+from utils.config import *
