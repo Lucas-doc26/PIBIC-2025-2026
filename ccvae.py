@@ -157,5 +157,5 @@ myloss = MyLoss()
 ccvae = CCVAE(encoder, decoder)
 ccvae.compile(optimizer=keras.optimizers.Adam(), loss=myloss)
 
-ccvae.fit(train,epochs=100, steps_per_epoch=len(train), validation_data=valid, validation_steps=len(valid))
-plot_autoencoder_with_ssim(test, ccvae, 128, 128, "Images/CCVAE-MyLoss.png")
+ccvae.fit(train,epochs=20, steps_per_epoch=len(train), validation_data=valid, validation_steps=len(valid))
+plot_autoencoder_with_ssim(test, ccvae, 128, 128, "Images/CCVAE-MyLoss-20.png")

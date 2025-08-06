@@ -73,7 +73,18 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
         image = np.clip(image, 0, 1)  # Garante que a imagem esteja no intervalo [0, 1]
         return (image - image.min()) / (image.max() - image.min()) if image.max() != image.min() else image
 
-    batch = next(x_test)  # só imagens
+    item = next(x_test)
+
+    # Verifica se o test está vindo com 
+    if isinstance(item, tuple) and len(item) == 2:
+        batch, label = item
+        if np.array_equal(label[0], batch[0]):
+            label = None
+    else:
+        batch = item
+        label = None
+
+    print(batch, label)
     n = min(8, batch.shape[0])
     batch = batch[:n]
 
@@ -84,7 +95,11 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
         plt.title("Original")
         plt.axis("off")
 
-        pred = autoencoder.predict(batch[i].reshape((1, width, height, 3)))
+        if label is not None:
+            pred = autoencoder.predict([batch[i].reshape((1, width, height, 3)), np.array([[label[i]]])])
+        else:
+            pred = autoencoder.predict(batch[i].reshape((1, width, height, 3)))
+
         pred_img = normalize(pred[0])
 
         plt.subplot(2, 8, i + 8 + 1)
@@ -97,4 +112,4 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
     if save_path is not None:
         plt.savefig(save_path)
 
-    plt.show()
+    #plt.show()

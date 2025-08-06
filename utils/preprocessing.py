@@ -33,12 +33,12 @@ def preprocessing_dataframe(path_csv: str, autoencoder: bool = False, data_algum
         dataframe['class'] = dataframe['class'].astype(str)
 
     
-    class_mode = None if autoencoder else 'sparse'
+    class_mode = 'input' if autoencoder else 'sparse'
 
     generator = datagen.flow_from_dataframe(
         dataframe=dataframe,
         x_col='path_image',
-        y_col=None if autoencoder else 'class',
+        y_col='path_image' if autoencoder else 'class',
         target_size=(input_shape),
         batch_size=batch_size,
         class_mode=class_mode,

@@ -20,9 +20,8 @@ tf.random.set_seed(SEED)
 def fit_with_loss(model, loss, train_gen, valid_gen, test_gen, savefig=None):
     model.summary()
     model.compile(loss=loss, optimizer=tf.keras.optimizers.Adam(learning_rate=0.001))
-    history = model.fit(train_gen, validation_data=valid_gen, epochs=100, steps_per_epoch=len(train_gen), validation_steps=len(valid_gen))
-    x, y = next(test_gen)
-    plot_autoencoder_with_ssim(x, model, 128, 128, savefig)
+    history = model.fit(train_gen, validation_data=valid_gen, epochs=20, steps_per_epoch=len(train_gen), validation_steps=len(valid_gen))
+    plot_autoencoder_with_ssim(test_gen, model, 128, 128, savefig)
     #pd.DataFrame(history.history).plot()
     clear_session()
 
@@ -62,21 +61,21 @@ ncc = NCC()
 myloss = MyLoss()
 
 if args.loss == 'ncc':
-    fit_with_loss(autoencoder, ncc, train_gen, valid_gen, test_gen, 'Images/autoencoder_ncc.png')
+    fit_with_loss(autoencoder, ncc, train_gen, valid_gen, test_gen, 'Images/autoencoder_ncc-20.png')
     clear_session()
 
 elif args.loss == 'ssim':
-    fit_with_loss(autoencoder, ssim, train_gen, valid_gen, test_gen, 'Images/autoencoder_ssim.png')
+    fit_with_loss(autoencoder, ssim, train_gen, valid_gen, test_gen, 'Images/autoencoder_ssim-20.png')
     clear_session()
 
 elif args.loss == 'psnr':
-    fit_with_loss(autoencoder, psnr, train_gen, valid_gen, test_gen, 'Images/autoencoder_psnr.png')
+    fit_with_loss(autoencoder, psnr, train_gen, valid_gen, test_gen, 'Images/autoencoder_psnr-20.png')
     clear_session()
 
 elif args.loss == 'myloss':
-    fit_with_loss(autoencoder, myloss, train_gen, valid_gen, test_gen, 'Images/autoencoder_myloss.png')
+    fit_with_loss(autoencoder, myloss, train_gen, valid_gen, test_gen, 'Images/autoencoder_myloss-20.png')
     clear_session()
 
 else:
-    fit_with_loss(autoencoder, 'mse', train_gen, valid_gen, test_gen, 'Images/autoencoder_mse.png')
+    fit_with_loss(autoencoder, 'mse', train_gen, valid_gen, test_gen, 'Images/autoencoder_mse-20.png')
     clear_session()
