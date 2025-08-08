@@ -37,44 +37,64 @@ class DatasetManager:
         shuffle_dataset(self.csv_dir)
 
 
-    def _return_days(self, days, dict_days_values, n_images, n_days):
+    def _return_days(self, days, dict_days_values, n_images, n_days): 
+
         days_selected = days[:n_days]
-        n_images_per_day = n_images // n_days
+
+        base_images_per_day_total = n_images // n_days  # total de imagens por dia (soma das 2 classes)
+        # Garante que seja par (para dividir igualmente)
+        if base_images_per_day_total % 2 != 0:
+            base_images_per_day_total -= 1
+
+        remainder = n_images - (base_images_per_day_total * n_days)  # quantas imagens sobraram
 
         while True:
             adjust = False
             days_selected = days[:n_days]
-            n_images_per_day = n_images // n_days
 
-            for day in days_selected:
-                values = dict_days_values[day]
-                if values[0] < n_images_per_day // 2 or values[1] < n_images_per_day // 2:
-                    n_days += 1
+            # Distribui o excesso em múltiplos de 2 (pra manter par) para os primeiros dias
+            images_per_day_total_list = [
+                base_images_per_day_total + 2 if i < remainder // 2 else base_images_per_day_total 
+                for i in range(n_days)
+            ]
+
+            # Agora verifica se cada dia tem pelo menos metade das imagens disponíveis por classe
+            for day, total_images_day in zip(days_selected, images_per_day_total_list):
+                half = total_images_day // 2
+                values = dict_days_values[day]  
+                if values[0] < half or values[1] < half:
+                    n_days += 1  # tenta pegar mais um dia para suprir a demanda
                     adjust = True
-                    break  # volta pro while e ajusta de novo
+                    break
 
             if not adjust:
                 break
 
         days_left = sorted(list(set(days) - set(days_selected)))
-        return days_selected, days_left, n_images_per_day // 2
+        
+        return days_selected, days_left, images_per_day_total_list
 
-    def _create_df_per_days(self, df, days, images_per_class=None):
+    def _create_df_per_days(self, df, days, images_per_day=None):
         df_final = pd.DataFrame(columns=['path_image', 'class'])
-        if images_per_class is None:
+
+        if images_per_day is None:
             for day in days:
-                df = df[df['day'] == day]
-                df_final = pd.concat([df_final, df], ignore_index=True)
+                df_day = df[df['day'] == day]
+                df_final = pd.concat([df_final, df_day], ignore_index=True)
         else:
-            for day in days:
+            for day, n_images in zip(days, images_per_day):
                 df_day = df[df['day'] == day]
                 empty = df_day[df_day['class'] == 0]
                 occupied = df_day[df_day['class'] == 1]
-                
-                empty_sample = empty.sample(n=images_per_class, random_state=SEED)
-                occupied_sample = occupied.sample(n=images_per_class, random_state=SEED)
 
-                df_final = pd.concat([empty_sample, occupied_sample], ignore_index=True)
+                half = n_images // 2
+                half_plus = half + (n_images % 2)  # caso seja ímpar, a classe 0 recebe a imagem a mais
+
+                empty_sample = empty.sample(n=min(half_plus, len(empty)), random_state=SEED, replace=(len(empty) < half_plus))
+                occupied_sample = occupied.sample(n=min(half, len(occupied)), random_state=SEED, replace=(len(occupied) < half))
+
+                df_final = pd.concat([df_final, empty_sample, occupied_sample], ignore_index=True)
+
         return df_final
 
     def split_train_valid_test(self, df, n_days_train, n_days_valid, n_images_train, n_images_valid):
@@ -133,10 +153,8 @@ class CNRDataset(DatasetManager):
         Cria o csv para cada câmera
         """
         cameras = df["camera"].unique().tolist()
-        print(sorted(cameras))
         for cam in sorted(cameras):
             df_cam = df[df["camera"] == cam]
-            print(df_cam.head())
 
             train, valid, test = self.split_train_valid_test(df, days_train, days_valid, n_images_train, n_images_valid)
             train.to_csv(os.path.join(self.csv_dir,f"{cam}", f"{cam}_train.csv"), index=False, columns=["path_image", "class"])

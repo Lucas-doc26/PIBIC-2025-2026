@@ -10,7 +10,7 @@ import pandas as pd
 def normalize_img(img):
     return img/255.
 
-def preprocessing_dataframe(path_csv: str, autoencoder: bool = False, data_algumentantation:bool = True, input_shape:int=(64,64)):
+def preprocessing_dataframe(path_csv: str, autoencoder: bool = False, data_algumentantation:bool = True, input_shape:int=(64,64), name='PUC'):
     """
     Ao passar um dataFrame .csv, ele irá retornar o gerador e dataframe
     
@@ -29,10 +29,10 @@ def preprocessing_dataframe(path_csv: str, autoencoder: bool = False, data_algum
 
     datagen = ImageDataGenerator(preprocessing_function=albumentations_tf if data_algumentantation else normalize_img)
 
+    #arruma para o sparse
     if len(dataframe.columns) > 1:
         dataframe['class'] = dataframe['class'].astype(str)
 
-    
     class_mode = 'input' if autoencoder else 'sparse'
 
     generator = datagen.flow_from_dataframe(
@@ -46,6 +46,13 @@ def preprocessing_dataframe(path_csv: str, autoencoder: bool = False, data_algum
     )
 
     print("Imagens totais:", generator.samples)
+
+    #add um nome, para conseguir passar qual base está sendo usada
+    generator.name = name
+
+    #arruma para int para poder fazer as previsões novamente
+    if len(dataframe.columns) > 1:
+        dataframe['class'] = dataframe['class'].astype(int)
     
     return generator, dataframe
 

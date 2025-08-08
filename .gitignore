@@ -13,3 +13,16 @@ db.sqlite3
 *.egg-info
 *.egg
 *.log
+
+#Modelos e resultados
+*.keras
+*.h5
+*.weigths.h5
+*.npy
+
+#Logs
+*.v2
+
+#Imagens
+*.png
+*.jpeg

@@ -1,14 +1,17 @@
 import random
 import os
 import numpy as np
+import pandas as pd
+from pathlib import Path
+import seaborn as sns
+import tensorflow as tf
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-from pathlib import Path
+import matplotlib.patches as mpatches
+from sklearn.metrics import confusion_matrix, accuracy_score
 from utils.preprocessing import normalize_img
 from utils.image_metrics import calculate_ssim
 
-import tensorflow as tf
-import tensorflow.image
 
 def return_random_image_from_PKLot(dataset_path, label, SEED=42):
     """
@@ -66,8 +69,6 @@ def plot_autoencoder(x_test, Autoencoder, width=128, height=128, caminho_para_sa
         save_path = os.path.join(caminho_para_salvar, f'Autoencoder-{nome_autoencoder}.png')
         plt.savefig(save_path)
     
-    plt.show()
-
 def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_path=None):
     def normalize(image):
         image = np.clip(image, 0, 1)  # Garante que a imagem esteja no intervalo [0, 1]
@@ -84,7 +85,6 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
         batch = item
         label = None
 
-    print(batch, label)
     n = min(8, batch.shape[0])
     batch = batch[:n]
 
@@ -112,4 +112,116 @@ def plot_autoencoder_with_ssim(x_test, autoencoder, width=128, height=128, save_
     if save_path is not None:
         plt.savefig(save_path)
 
-    #plt.show()
+def plot_history(history, type='Classifier', save_fig=None):
+    # Função auxiliar pra evitar erro com chave inexistente
+    def get_hist(key):
+        return history.history.get(key, [])
+
+    if type == 'Classifier':
+        loss = get_hist('loss')
+        val_loss = get_hist('val_loss')
+        accuracy = get_hist('accuracy')
+        val_accuracy = get_hist('val_accuracy')
+        epochs = range(len(loss))
+
+        plt.figure(figsize=(15, 5))
+
+        # Loss
+        plt.subplot(1, 2, 1)
+        plt.plot(epochs, loss, label='loss')
+        plt.plot(epochs, val_loss, label='val_loss')
+        plt.title('Loss')
+        plt.xticks(epochs)
+        plt.legend()
+
+        # Accuracy
+        plt.subplot(1, 2, 2)
+        plt.plot(epochs, accuracy, label='accuracy')
+        plt.plot(epochs, val_accuracy, label='val_accuracy')
+        plt.title('Accuracy')
+        plt.xticks(epochs)
+        plt.legend()
+
+    elif type == 'Autoencoder':
+        loss = get_hist('loss')
+        val_loss = get_hist('val_loss')
+        epochs = range(len(loss))
+
+        plt.figure(figsize=(8, 5))
+        plt.plot(epochs, loss, label='loss')
+        plt.plot(epochs, val_loss, label='val_loss')
+        plt.title('Loss')
+        plt.xticks(epochs)
+        plt.legend()
+
+    else:  # CVAE ou CCVAE
+        loss = get_hist('loss')
+        val_loss = get_hist('val_loss')
+        kl_loss = get_hist('kl_loss')
+        val_kl_loss = get_hist('val_kl_loss')
+        reconstruction_loss = get_hist('reconstruction_loss')
+        val_reconstruction_loss = get_hist('val_reconstruction_loss')
+        epochs = range(len(loss))
+
+        plt.figure(figsize=(15, 5))
+
+        plt.subplot(1, 3, 1)
+        plt.plot(epochs, loss, label='loss')
+        plt.plot(epochs, val_loss, label='val_loss')
+        plt.title('Loss')
+        plt.xticks(epochs)
+        plt.legend()
+
+        plt.subplot(1, 3, 2)
+        plt.plot(epochs, kl_loss, label='kl_loss')
+        plt.plot(epochs, val_kl_loss, label='val_kl_loss')
+        plt.title('KL Loss')
+        plt.xticks(epochs)
+        plt.legend()
+
+        plt.subplot(1, 3, 3)
+        plt.plot(epochs, reconstruction_loss, label='reconstruction_loss')
+        plt.plot(epochs, val_reconstruction_loss, label='val_reconstruction_loss')
+        plt.title('Reconstruction Loss')
+        plt.xticks(epochs)
+        plt.legend()
+
+    if save_fig:
+        plt.savefig(save_fig, bbox_inches='tight')
+
+    plt.close()
+
+def plot_confusion_matrix(y_true, y_pred, labels=['Empty', 'Occupied'], legend:str=None , save_path=None):
+    """
+    Plota uma matriz de confusão.
+
+    Args:
+        y_true: Array numpy com os rótulos verdadeiros
+        y_pred: Array numpy com as previsões do modelo
+        labels: Lista de rótulos das classes
+        title: Título da figura (opcional)
+        save_path: Caminho para salvar a figura (opcional)
+    """
+    cm = confusion_matrix(y_true, y_pred)
+    accuracy = accuracy_score(y_true, y_pred)
+
+    plt.figure(figsize=(10, 7))
+    sns.heatmap(cm, annot=True, fmt='d', cmap='Blues', 
+                xticklabels=labels, yticklabels=labels)
+    
+    accuracy_text = f"Accuracy: {accuracy * 100:.2f}%"
+    plt.title(f"{accuracy_text}")
+    plt.xlabel('Predicted')
+    plt.ylabel('True')
+
+    if legend:
+        if isinstance(legend, str):
+            legend = [legend]
+        patches = [mpatches.Patch(color='lightblue', label=text) for text in legend]
+        plt.legend(handles=patches, loc='lower right', fontsize=10, frameon=True)
+
+    # Salvar ou exibir a figura
+    save_path = Path(save_path)
+    save_path.parent.mkdir(parents=True, exist_ok=True)
+    plt.savefig(save_path)
+    plt.close()

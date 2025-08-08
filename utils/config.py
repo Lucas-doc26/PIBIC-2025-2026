@@ -80,7 +80,6 @@ def clear_session():
     keras.backend.clear_session()  
     gc.collect()
     if tf.config.list_physical_devices('GPU'):
-        print("GPU")
         tf.config.experimental.reset_memory_stats('GPU:0') #limpa memória da gpu
 
 # Executa as configurações ao importar o módulo
